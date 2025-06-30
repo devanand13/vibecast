@@ -39,7 +39,9 @@ export const Landing = () => {
                 return <ServicesButton key={index} buttonText={buttonText}/>
             })}
           </div>
-          
+          <div className="mt-15 bg-violet-500 hover:bg-violet-400 cursor-pointer w-60 rounded-lg text-center font-bold">
+            <button className="p-2 py-3 cursor-pointer ">Start For Free</button>
+          </div>
         </div>
   
         <div className="absolute inset-0 bg-black/40 z-[1]" />
