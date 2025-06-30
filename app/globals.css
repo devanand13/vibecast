@@ -1,1 +1,9 @@
 @import "tailwindcss";
+
+input:-webkit-autofill {
+    box-shadow: inset 0 0 0 1000px #27272a !important;
+    -webkit-text-fill-color: white !important;
+    caret-color: white;
+    transition: background-color 9999s ease-in-out 0s;
+  }
+  

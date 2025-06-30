@@ -66,9 +66,9 @@ export const SignUpBox = () => {
                         Sign up to join VibeCast it's free
                     </div>
                     <div className="flex flex-col pt-3 p-2 items-center">
-                      <input className="bg-neutral-800 text-white p-2 w-4/5 rounded-xl" type="text" placeholder="Email" onChange={(e)=>{setEmail(e.target.value)}}/>
-                      <input className="bg-neutral-800 text-white p-2 mt-5 w-4/5 rounded-xl" type="text" placeholder="Password" onChange={(e)=>{setPassword(e.target.value)}} />
-                      <button className="bg-violet-500 w-4/5 py-2 mt-5 rounded-xl text-white font-bold text-md hover:bg-violet-800 hover:cursor-pointer" onClick={handleSignup}>Create your account</button>
+                      <input className="bg-neutral-800 text-white pl-4 p-3 w-4/5 rounded-xl  focus:outline focus:outline-2 focus:outline-violet-500 " type="text" placeholder="Email" onChange={(e)=>{setEmail(e.target.value)}}/>
+                      <input className="bg-neutral-800 text-white pl-4 p-3 mt-3 w-4/5 rounded-xl focus:outline focus:outline-2 focus:outline-violet-500" type="text" placeholder="Password" onChange={(e)=>{setPassword(e.target.value)}} />
+                      <button className="bg-violet-500 w-4/5 py-2 mt-3 rounded-xl text-white font-bold text-md hover:bg-violet-800 hover:cursor-pointer" onClick={handleSignup}>Create your account</button>
                     </div>
                     <div className="flex justify-center text-xs text-gray-400 w-full pt-5 text-center">
                       By signing up, you agree to our
