@@ -5,6 +5,7 @@ import { MdOutlineMailOutline } from "react-icons/md";
 import { SignUpOptionButton } from "./SIgnUpOptionButton";
 import { useState } from "react";
 import Error from "next/error";
+import Link from "next/link";
 
 export const SignUpBox = () => {
     const [mailSelection,setMailSelection] = useState(false);
@@ -116,9 +117,13 @@ export const SignUpBox = () => {
                 </div>
                 <div className="flex justify-center text-xs text-gray-400 w-full pt-5 text-center">
                   Have an account? 
-                  <div className="pl-2 text-purple-400 cursor-pointer">
-                    Log in
-                  </div>
+                  <nav>
+                    <Link href={"/login"}>
+                      <div className="pl-2 text-purple-400 cursor-pointer">
+                        Log in
+                      </div>
+                    </Link>
+                  </nav>
                 </div>
 
             </div>

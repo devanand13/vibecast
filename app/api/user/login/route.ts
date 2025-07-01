@@ -11,17 +11,19 @@ export async function POST(request : Request) {
 
     const email = body.email;
     const password = body.password;
-    console.log(body)
     
     try{
-        const user = await prisma.user.create({
-            data:{
-                username:email,
-                password:password,
+        const user = await prisma.user.findFirst({
+            where:{
+                username:email
             }
         })
 
-        return NextResponse.json({ message: 'Signed Up!', user: user });
+        if(user?.password == password){
+            return NextResponse.json({ message: 'Logged In!', user: user });
+        }else{
+            return NextResponse.json({ message: 'Invalid Credentials!'});
+        }
     }catch(e){
         return NextResponse.json({ message: 'Signup Failed, please check the fields!', status:400 });    
     }
