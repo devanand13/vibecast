@@ -1,4 +1,5 @@
 "use client"
+
 import { FcGoogle } from "react-icons/fc";
 import { FaApple } from "react-icons/fa";
 import { LoginOptionButton } from "./LoginOptionButton";
@@ -6,8 +7,11 @@ import { useState } from "react";
 import { FaGoogle } from "react-icons/fa6";
 import Error from "next/error";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
 
 export const LoginBox = () => {
+    const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
@@ -39,6 +43,7 @@ export const LoginBox = () => {
         }
   
         alert("Login successful!");
+        router.push("/dashboard/home"); 
       } catch (err) {
         alert("Error: " + err);
       }
