@@ -27,7 +27,7 @@ export const DashboardTopBar = ({
           <input
             type="text"
             placeholder="🔍 Search"
-            className="bg-stone-800 w-3/8 rounded-lg placeholder-white text-center focus:text-left focus:outline focus:outline-2 focus:outline-gray-500 px-3"
+            className="bg-neutral-800 w-3/8 rounded-lg placeholder-white text-center focus:text-left focus:outline focus:outline-2 focus:outline-gray-500 px-3"
           />
         </div>
       </div>

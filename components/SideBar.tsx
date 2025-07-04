@@ -33,7 +33,7 @@ const sideBarBottomOptions = [
 export const SideBar = ({ isVisible }: { isVisible: boolean }) => {
 
     return (
-      <div className={`transition-all duration-300 ${isVisible ? "w-65" : "w-20"} bg-black h-screen`}>
+      <div className={`transition-all duration-300 ${isVisible ? "w-65" : "w-20"} bg-black `}>
             {
                 isVisible ? <div className="transition-all flex flex-col text-white pt-5">
                     <div>
