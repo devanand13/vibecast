@@ -1,6 +1,5 @@
 "use client"
 
-import { FcGoogle } from "react-icons/fc";
 import { FaApple } from "react-icons/fa";
 import { LoginOptionButton } from "./LoginOptionButton";
 import { useState } from "react";
@@ -8,6 +7,7 @@ import { FaGoogle } from "react-icons/fa6";
 import Error from "next/error";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 
 export const LoginBox = () => {
@@ -59,7 +59,7 @@ export const LoginBox = () => {
                         Login to VibeCast
                     </div>
                     <div className="text-gray-400 text-sm pt-3 w-full flex justify-center">
-                        Don't have an account? 
+                        {`Don't have an account?`}
                         <nav>
                             <Link href="/signup">
                                 <div >
@@ -96,8 +96,14 @@ export const LoginBox = () => {
                 </div>
               </div> 
             </div>
-            <div className="bg-black-900 w-55/100">
-              <img src="/imagex2.749397e3.png" alt=""  className="h-full w-full py-5 pl-5"/>
+            <div className="bg-black w-[55%]">
+              <Image
+                src="/imagex2.749397e3.png"
+                alt="Descriptive Alt Text"
+                width={500}
+                height={500}
+                className="h-full w-full py-5 pl-5"
+              />
             </div>
         </div>
       </div>

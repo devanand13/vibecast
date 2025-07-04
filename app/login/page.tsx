@@ -1,7 +1,6 @@
 import { AppBar } from "@/components/AppBar";
 import { Landing } from "@/components/Landing";
 import { LoginBox } from "@/components/LoginBox";
-import { SignUpBox } from "@/components/SignUpBox";
 
 export default function Signup() {
   return (

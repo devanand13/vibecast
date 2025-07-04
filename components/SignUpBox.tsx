@@ -6,6 +6,8 @@ import { SignUpOptionButton } from "./SIgnUpOptionButton";
 import { useState } from "react";
 import Error from "next/error";
 import Link from "next/link";
+import Image from "next/image";
+
 
 export const SignUpBox = () => {
     const [mailSelection,setMailSelection] = useState(false);
@@ -64,7 +66,7 @@ export const SignUpBox = () => {
                         Create your account
                     </div>
                     <div className="text-gray-400 text-sm pt-3 w-full flex justify-center">
-                        Sign up to join VibeCast it's free
+                        {`Sign up to join VibeCast it's free`}
                     </div>
                     <div className="flex flex-col pt-3 p-2 items-center">
                       <input className="bg-neutral-800 text-white pl-4 p-3 w-4/5 rounded-xl  focus:outline focus:outline-2 focus:outline-violet-500 " type="text" placeholder="Email" onChange={(e)=>{setEmail(e.target.value)}}/>
@@ -90,7 +92,7 @@ export const SignUpBox = () => {
                     Create your account
                 </div>
                 <div className="text-gray-400 text-sm pt-3 w-full flex justify-center">
-                    Sign up to join VibeCast it's free
+                    {`Sign up to join VibeCast it's free`}
                 </div>
                 <div className="flex flex-col pt-3">
                   {
@@ -129,8 +131,14 @@ export const SignUpBox = () => {
             </div>
             }
             </div>
-            <div className="bg-black-900 w-55/100">
-              <img src="/imagex2.749397e3.png" alt=""  className="h-full w-full py-5 pl-5"/>
+            <div className="bg-black w-[55%]">
+              <Image
+                src="/imagex2.749397e3.png"
+                alt="Descriptive Alt Text"
+                width={500}
+                height={500}
+                className="h-full w-full py-5 pl-5"
+              />
             </div>
         </div>
       </div>

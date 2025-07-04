@@ -13,7 +13,7 @@ export const DashboardTopBar = ({
           )}
           <div
             className={`w-4 h-4 border border-2 text-stone-500 font-extrabold text-md flex items-center justify-center text-center p-3 pt-2 pb-3 rounded-sm border-stone-500 cursor-pointer hover:text-white hover:border-white ${
-              isSidebarVisible ? "ml-9" : "ml-3"
+              isSidebarVisible ? "ml-9" : "ml-6"
             }`}
             onClick={() => {
               setSidebarVisible(!isSidebarVisible);

@@ -1,8 +1,7 @@
 "use server"
 
-import { NextRequest, NextResponse } from 'next/server';
+import {  NextResponse } from 'next/server';
 import {  PrismaClient } from '@/generated/prisma';
-import { NextApiRequest } from 'next';
 
 export async function POST(request : Request) {
     const prisma = new PrismaClient()
@@ -23,6 +22,7 @@ export async function POST(request : Request) {
 
         return NextResponse.json({ message: 'Signed Up!', user: user });
     }catch(e){
+        console.log(e)
         return NextResponse.json({ message: 'Signup Failed, please check the fields!', status:400 });    
     }
     
