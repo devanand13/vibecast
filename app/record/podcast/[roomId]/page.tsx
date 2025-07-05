@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter,usePathname } from 'next/navigation';
 
 
 export default function Podcast() {
@@ -19,6 +19,8 @@ export default function Podcast() {
   const [speakerId, setSpeakerId] = useState('');
 
   const router = useRouter();
+  const pathname = usePathname();
+  const roomId = pathname?.split('/').pop();
 
   const getDevices = async () => {
     const all = await navigator.mediaDevices.enumerateDevices();
@@ -214,7 +216,10 @@ export default function Podcast() {
         </div>
         </div>
         <div className='mt-5 flex justify-center items-center  '>
-            <button className='bg-neutral-700 p-3 rounded-xl shadow:neutral-600 cursor-pointer font-bold hover:bg-neutral-600 hover:shadow-lg shadow-neutral-800'>Join Room</button>
+            <button 
+            className='bg-neutral-700 p-3 rounded-xl shadow:neutral-600 cursor-pointer font-bold hover:bg-neutral-600 hover:shadow-lg shadow-neutral-800' 
+            onClick={()=>{router.push(`/record/podcast/${roomId}/room`)}}
+            >Join Room</button>
         </div>
       </div>
     </div>
