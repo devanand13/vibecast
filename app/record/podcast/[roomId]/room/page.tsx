@@ -1,8 +1,11 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import io, { Socket } from 'socket.io-client';
+import io from 'socket.io-client';
 import mediasoupClient, { Device } from 'mediasoup-client';
+import { TransportOptions,RtpParameters } from 'mediasoup-client/types';
+
+
 import {
   AppData,
   Consumer,
@@ -10,67 +13,22 @@ import {
   RtpCapabilities,
   Transport,
 } from 'mediasoup-client/types';
+import { DefaultEventsMap } from 'socket.io';
+import {Socket} from 'socket.io-client'
 
-interface ServerToClientEvents {
-  'connection:success': (data: { socketId: string; existsProducer: boolean }) => void;
-  'new:producer': (data: { producerId: string }) => void;
-}
+type ServerConsumerParams = {
+  id: string;
+  producerId: string;
+  kind: 'audio' | 'video';
+  rtpParameters: RtpParameters;
+  serverConsumerId: string;
+};
 
-interface ClientToServerEvents {
-  'joinRoom': (
-    data: { roomName: string },
-    callback: (data: { rtpCapabilities: RtpCapabilities }) => void
-  ) => void;
-
-  'createWebRtcTransport': (
-    data: { consumer: boolean },
-    callback: (response: { params: {
-      id: string;
-      iceParameters: any;
-      iceCandidates: any;
-      dtlsParameters: any;
-    } }) => void
-  ) => void;
-
-  'transport-connect': (data: { dtlsParameters: any }) => void;
-
-  'transport-produce': (
-    data: {
-      kind: string;
-      rtpParameters: any;
-      appData: any;
-    },
-    callback: (response: { id: string; producersExists: boolean }) => void
-  ) => void;
-
-  'transport-recv-connect': (
-    data: { dtlsParameters: any; serverConsumerTransportId: string }
-  ) => void;
-
-  'consume': (
-    data: {
-      rtpCapabilities: RtpCapabilities;
-      remoteProducerId: string;
-      serverConsumerTransportId: string;
-    },
-    callback: (response: { params: {
-      id: string;
-      producerId: string;
-      kind: string;
-      rtpParameters: any;
-      serverConsumerId: string;
-    } | { error: string } }) => void
-  ) => void;
-
-  'consumer-resume': (data: { serverConsumerId: string }) => void;
-
-  'getProducers': (callback: (producerIds: string[]) => void) => void;
-}
 
 export default function RoomPage() {
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteContainerRef = useRef<HTMLDivElement | null>(null);
-  const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
+  const socketRef = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(null);
 
   const deviceRef = useRef<Device | null>(null);
   const videoTrackRef = useRef<MediaStreamTrack | null>(null);
@@ -120,7 +78,7 @@ export default function RoomPage() {
     socketRef.current?.emit(
       'joinRoom',
       { roomName: room },
-      async ({ rtpCapabilities }) => {
+      async ({ rtpCapabilities }: { rtpCapabilities: RtpCapabilities }) => {
         const device = new mediasoupClient.Device();
         await device.load({ routerRtpCapabilities: rtpCapabilities });
         deviceRef.current = device;
@@ -131,7 +89,9 @@ export default function RoomPage() {
   };
 
   const createSendTransport = () => {
-    socketRef.current?.emit('createWebRtcTransport', { consumer: false }, ({ params }) => {
+    socketRef.current?.emit('createWebRtcTransport', { consumer: false }, ({ params }: { params: TransportOptions }) => {
+      console.log('Params')
+      console.log(params)
       const transport = deviceRef.current?.createSendTransport(params);
       if (!transport) return;
       producerTransportRef.current = transport;
@@ -153,7 +113,7 @@ export default function RoomPage() {
             rtpParameters: parameters.rtpParameters,
             appData: parameters.appData,
           },
-          ({ id }) => {
+          ({ id }: { id: string }) => {
             callback({ id });
           }
         );
@@ -171,7 +131,7 @@ export default function RoomPage() {
   };
 
   const signalNewConsumerTransport = (remoteProducerId: string) => {
-    socketRef.current?.emit('createWebRtcTransport', { consumer: true }, ({ params }) => {
+    socketRef.current?.emit('createWebRtcTransport', { consumer: true }, ({ params }: { params: TransportOptions }) => {
       const transport = deviceRef.current?.createRecvTransport(params);
       if (!transport) return;
 
@@ -190,16 +150,11 @@ export default function RoomPage() {
       socketRef.current?.emit(
         'consume',
         {
-          rtpCapabilities: deviceRef.current!.rtpCapabilities!,
+          rtpCapabilities: deviceRef.current?.rtpCapabilities,
           remoteProducerId,
           serverConsumerTransportId: params.id,
         },
-        async ({ params: consumerParams }) => {
-          if ('error' in consumerParams) {
-            console.error('Consume error:', consumerParams.error);
-            return;
-          }
-
+        async ({ params: consumerParams }: { params: ServerConsumerParams }) => {
           const consumer = await transport.consume({
             id: consumerParams.id,
             producerId: consumerParams.producerId,
@@ -236,13 +191,13 @@ export default function RoomPage() {
   };
 
   const getProducers = () => {
-    socketRef.current?.emit('getProducers', (producerIds) => {
+    socketRef.current?.emit('getProducers', (producerIds: string[]) => {
       producerIds.forEach(signalNewConsumerTransport);
     });
   };
 
   useEffect(() => {
-    const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io('https://localhost:3001/mediasoup', {
+    const socket = io('https://localhost:3001/mediasoup', {
       path: '/socket.io',
       transports: ['websocket'],
       secure: true,
@@ -251,13 +206,7 @@ export default function RoomPage() {
 
     socketRef.current = socket;
 
-    socket.on('new:producer', ({ producerId }) => {
-      signalNewConsumerTransport(producerId);
-    });
-
-    socket.on('connection:success', ({ socketId, existsProducer }) => {
-      console.log(`✅ Connected with socketId: ${socketId}, producer exists: ${existsProducer}`);
-    });
+    socket.on('new:producer', ({ producerId }: { producerId: string }) => signalNewConsumerTransport(producerId));
 
     joinRoom();
 
