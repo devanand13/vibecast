@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef,useState } from 'react';
 import io from 'socket.io-client';
 import mediasoupClient, { Device } from 'mediasoup-client';
 import { TransportOptions,RtpParameters } from 'mediasoup-client/types';
+import { IoVideocam,IoVideocamOff } from "react-icons/io5";
+
 
 
 import {
@@ -24,6 +26,11 @@ type ServerConsumerParams = {
   serverConsumerId: string;
 };
 
+type RemoteStream = {
+  stream: MediaStream;
+  producerId: string;
+};
+
 
 export default function RoomPage() {
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -34,6 +41,11 @@ export default function RoomPage() {
   const videoTrackRef = useRef<MediaStreamTrack | null>(null);
   const producerTransportRef = useRef<Transport<AppData> | null>(null);
   const producerRef = useRef<Producer | null>(null);
+  const isVideoOnRef = useRef(false);
+  const [remoteStreams, setRemoteStreams] = useState<RemoteStream[]>([]);
+  const [isVideoOn, setIsVideoOn] = useState(false);
+
+
 
   const consumerTransportsRef = useRef<{
     transport: Transport<AppData>;
@@ -53,7 +65,19 @@ export default function RoomPage() {
   };
 
   const getLocalStream = async () => {
+    if (isVideoOnRef.current) {
+      // Stop the video
+      videoTrackRef.current?.stop();
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = null;
+      }
+      isVideoOnRef.current = false;
+      setIsVideoOn(false);
+      return;
+    }
+  
     try {
+      
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
         video: {
@@ -69,6 +93,9 @@ export default function RoomPage() {
       }
 
       createSendTransport();
+
+      isVideoOnRef.current = true;
+      setIsVideoOn(true);
     } catch (err) {
       console.error('Error getting local stream:', err);
     }
@@ -180,7 +207,7 @@ export default function RoomPage() {
             video.play().catch((e) => console.warn('[❌] Auto-play blocked:', e));
           };
 
-          remoteContainerRef.current?.appendChild(video);
+          setRemoteStreams((prev) => [...prev, { stream, producerId: remoteProducerId }]);
 
           socketRef.current?.emit('consumer-resume', {
             serverConsumerId: consumerParams.serverConsumerId,
@@ -208,6 +235,13 @@ export default function RoomPage() {
 
     socket.on('new:producer', ({ producerId }: { producerId: string }) => signalNewConsumerTransport(producerId));
 
+    socket.on('producer-closed', ({ remoteProducerId }) => {
+      consumerTransportsRef.current = consumerTransportsRef.current.filter(c => c.producerId !== remoteProducerId);
+
+      setRemoteStreams(prev => prev.filter(s => s.producerId !== remoteProducerId));
+    });
+    
+
     joinRoom();
 
     return () => {
@@ -216,38 +250,61 @@ export default function RoomPage() {
   }, []);
 
   return (
-    <div className="p-4 bg-neutral-800">
-      <div className="overflow-x-auto">
-        <table className="table-auto w-full text-left border-collapse">
-          <thead>
-            <tr>
-              <th className="px-4 py-2">Local Video</th>
-              <th className="px-4 py-2">Remote Video</th>
-            </tr>
-          </thead>
-          <tbody className="align-top">
-            <tr>
-              <td className="px-4 py-2">
-                <div className="flex justify-center bg-papayawhip p-2">
-                  <video ref={localVideoRef} autoPlay playsInline className="w-[360px] bg-black" />
-                </div>
-              </td>
-              <td className="px-4 py-2">
-                <div ref={remoteContainerRef} className="flex flex-wrap justify-center gap-2 bg-papayawhip p-2" />
-              </td>
-            </tr>
-            <tr>
-              <td colSpan={2}>
-                <div className="flex justify-center bg-papayawhip p-2">
-                  <button onClick={getLocalStream} className="px-4 py-2 bg-blue-500 text-white rounded">
-                    1. Get Local Video & Start
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <div className="relative bg-neutral-800 h-screen flex flex-col justify-between p-4">
+      <div className="flex-1 flex justify-center items-center overflow-hidden relative">
+        {remoteStreams.length > 0 && (
+          <div
+            className={`grid gap-4 w-full justify-center ${
+              remoteStreams.length === 1 ? 'grid-cols-1' : 'grid-cols-2 md:grid-cols-3'
+            }`}
+          >
+            {remoteStreams.map(({ stream }, index) => (
+              <div key={index} className="relative w-full max-w-[400px]">
+              <video
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-auto bg-black rounded"
+                ref={(video) => {
+                  if (video) video.srcObject = stream;
+                }}
+              />
+              <div className="absolute top-2 left-2 text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
+                {`User ${index + 1}`}
+              </div>
+            </div>
+            ))}
+          </div>
+        )}
+        <div
+          className={`${
+            remoteStreams.length === 0
+              ? 'relative w-full h-full'
+              : 'absolute bottom-4 right-4 w-[160px] h-[120px]'
+          }`}
+        >
+          <video
+            ref={localVideoRef}
+            autoPlay
+            playsInline
+            muted
+            className={`bg-black rounded shadow-lg w-full h-full object-contain`}
+          />
+          <div className="absolute top-2 left-2 text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
+            You
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-center p-4">
+        <button
+          onClick={getLocalStream}
+          className=" p-4 bg-blue-500 text-white rounded-3xl w-12 h-12 flex items-center"
+        >
+          {isVideoOnRef.current ? <IoVideocamOff className='w-8 h-8'/>:<IoVideocam className='w-8 h-8'/>}
+        </button>
       </div>
     </div>
   );
+  
 }
