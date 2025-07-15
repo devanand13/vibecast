@@ -34,7 +34,6 @@ type RemoteStream = {
 
 export default function RoomPage() {
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
-  const remoteContainerRef = useRef<HTMLDivElement | null>(null);
   const socketRef = useRef<Socket<DefaultEventsMap, DefaultEventsMap> | null>(null);
 
   const deviceRef = useRef<Device | null>(null);
@@ -43,7 +42,6 @@ export default function RoomPage() {
   const producerRef = useRef<Producer | null>(null);
   const isVideoOnRef = useRef(false);
   const [remoteStreams, setRemoteStreams] = useState<RemoteStream[]>([]);
-  const [isVideoOn, setIsVideoOn] = useState(false);
 
 
 
@@ -72,7 +70,7 @@ export default function RoomPage() {
         localVideoRef.current.srcObject = null;
       }
       isVideoOnRef.current = false;
-      setIsVideoOn(false);
+      socketRef.current?.emit('videoOff')
       return;
     }
   
@@ -95,7 +93,6 @@ export default function RoomPage() {
       createSendTransport();
 
       isVideoOnRef.current = true;
-      setIsVideoOn(true);
     } catch (err) {
       console.error('Error getting local stream:', err);
     }
@@ -254,17 +251,17 @@ export default function RoomPage() {
       <div className="flex-1 flex justify-center items-center overflow-hidden relative">
         {remoteStreams.length > 0 && (
           <div
-            className={`grid gap-4 w-full justify-center ${
-              remoteStreams.length === 1 ? 'grid-cols-1' : 'grid-cols-2 md:grid-cols-3'
+            className={`grid gap-4 justify-center ${
+              remoteStreams.length === 1 ? 'grid-cols-1 w-full' : 'grid-cols-2 w-13/16'
             }`}
           >
             {remoteStreams.map(({ stream }, index) => (
-              <div key={index} className="relative w-full max-w-[400px]">
+              <div key={index} className="relative w-full aspect-video">
               <video
                 autoPlay
                 playsInline
                 muted
-                className="w-full h-auto bg-black rounded"
+                className="w-full h-full bg-black rounded object-contain"
                 ref={(video) => {
                   if (video) video.srcObject = stream;
                 }}
@@ -272,7 +269,7 @@ export default function RoomPage() {
               <div className="absolute top-2 left-2 text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
                 {`User ${index + 1}`}
               </div>
-            </div>
+            </div>            
             ))}
           </div>
         )}
@@ -299,7 +296,7 @@ export default function RoomPage() {
       <div className="flex justify-center p-4">
         <button
           onClick={getLocalStream}
-          className=" p-4 bg-blue-500 text-white rounded-3xl w-12 h-12 flex items-center"
+          className="p-4 bg-blue-500 text-white rounded-3xl w-12 h-12 flex items-center"
         >
           {isVideoOnRef.current ? <IoVideocamOff className='w-8 h-8'/>:<IoVideocam className='w-8 h-8'/>}
         </button>

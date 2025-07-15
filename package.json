@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -32,7 +33,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
     "prisma": "^6.10.1",
-    "tailwindcss": "^4",
+    "tailwindcss": "^4.1.11",
     "typescript": "^5"
   }
 }
