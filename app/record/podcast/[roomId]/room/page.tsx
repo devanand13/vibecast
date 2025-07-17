@@ -5,6 +5,8 @@ import io from 'socket.io-client';
 import mediasoupClient, { Device } from 'mediasoup-client';
 import { TransportOptions,RtpParameters } from 'mediasoup-client/types';
 import { IoVideocam,IoVideocamOff } from "react-icons/io5";
+import { IoMdMic,IoMdMicOff } from "react-icons/io";
+import { ImExit } from "react-icons/im";
 
 
 
@@ -25,6 +27,7 @@ type ServerConsumerParams = {
   rtpParameters: RtpParameters;
   serverConsumerId: string;
   peerName:string;
+  peerSocketId: string;
 };
 
 type RemoteStream = {
@@ -44,6 +47,8 @@ export default function RoomPage() {
   const producerTransportRef = useRef<Transport<AppData> | null>(null);
   const producerRef = useRef<Producer | null>(null);
   const isVideoOnRef = useRef(false);
+  const [isVideoOn, setIsVideoOn] = useState(false);
+  const [isMicOn, setIsMicOn] = useState(false);
   const [remoteStreams, setRemoteStreams] = useState<RemoteStream[]>([]);
 
   const consumerTransportsRef = useRef<{
@@ -51,6 +56,8 @@ export default function RoomPage() {
     consumer: Consumer<AppData>;
     producerId: string;
   }[]>([]);
+
+  console.log(`Rerender`)
 
   const room = typeof window !== 'undefined' ? window.location.pathname.split('/')[3] : '';
 
@@ -65,27 +72,24 @@ export default function RoomPage() {
 
   const handleLocalStream = async () => {
     if (isVideoOnRef.current) {
-      // Pause producer
       await producerRef.current?.pause();
   
-      // Stop video track to release camera
       if (videoTrackRef.current) {
         videoTrackRef.current.stop();
         videoTrackRef.current = null;
       }
   
-      // Clear local video preview
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = null;
       }
   
       socketRef.current?.emit('producer-pause');
       isVideoOnRef.current = false;
+      setIsVideoOn(false)
       return;
     }
   
     try {
-      // Get new camera stream
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
         video: {
@@ -97,43 +101,90 @@ export default function RoomPage() {
       const newTrack = stream.getVideoTracks()[0];
       videoTrackRef.current = newTrack;
   
-      // Set local preview
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
       }
   
       if (!producerRef.current) {
-        // Call only once: will internally call produce()
         await createSendTransport();
       } else {
-        // Reuse transport/producer
         await producerRef.current.replaceTrack({ track: newTrack });
         await producerRef.current.resume();
       }
   
       socketRef.current?.emit('producer-resume');
       isVideoOnRef.current = true;
+      setIsVideoOn(true)
     } catch (err) {
       console.error('Error accessing camera:', err);
     }
   };
   
+  const handleLocalAudioStream = ()=>{
+    setIsMicOn(!isMicOn);
+  }
   
 
   const joinRoom = () => {
     socketRef.current?.emit(
       'joinRoom',
-      { roomName: room, userName:"Random user" },
-      async ({ rtpCapabilities }: { rtpCapabilities: RtpCapabilities }) => {
+      { roomName: room, userName: "Random user" },
+      async ({ rtpCapabilities, peers }: { rtpCapabilities: RtpCapabilities; peers: { socketId: string; name: string }[] }) => {
         const device = new mediasoupClient.Device();
         await device.load({ routerRtpCapabilities: rtpCapabilities });
         deviceRef.current = device;
-
+    
+        setRemoteStreams(prev => {
+          const updated = [...prev];
+          peers.forEach(({ socketId, name }) => {
+            const alreadyExists = updated.some(s => s.producerId === socketId);
+            if (!alreadyExists) {
+              updated.push({
+                stream: new MediaStream(),
+                producerId: socketId,
+                isPaused: true,
+                name
+              });
+            }
+          });
+          return updated;
+        });
+    
         getProducers();
       }
-    );
+    );    
   };
 
+  const leaveRoom = () => {
+    socketRef.current?.disconnect(); 
+  
+    videoTrackRef.current?.stop();
+    videoTrackRef.current = null;
+  
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = null;
+    }
+  
+    producerTransportRef.current?.close();
+    producerTransportRef.current = null;
+  
+    producerRef.current?.close();
+    producerRef.current = null;
+  
+    consumerTransportsRef.current.forEach(({ transport, consumer }) => {
+      consumer.close();
+      transport.close();
+    });
+    consumerTransportsRef.current = [];
+  
+    setRemoteStreams([]);
+    setIsVideoOn(false);
+    setIsMicOn(false);
+  
+    window.location.href = '/'; 
+  };
+
+  
   const createSendTransport = () => {
     if (producerTransportRef.current || producerRef.current) return;
 
@@ -228,7 +279,26 @@ export default function RoomPage() {
             video.play().catch((e) => console.warn('[❌] Auto-play blocked:', e));
           };
 
-          setRemoteStreams((prev) => [...prev, { stream, producerId: remoteProducerId, name:consumerParams.peerName }]);
+          console.log(remoteStreams)
+
+          setRemoteStreams((prev) => {
+            const exists = prev.some(s => s.producerId === consumerParams.peerSocketId);
+            if (exists) {
+              return prev.map(s =>
+                s.producerId === consumerParams.peerSocketId
+                  ? { ...s, stream, isPaused: false, name: consumerParams.peerName }
+                  : s
+              );
+            } else {
+              return [...prev, {
+                stream,
+                producerId: consumerParams.peerSocketId,
+                isPaused: false,
+                name: consumerParams.peerName
+              }];
+            }
+          });
+                                   
 
           socketRef.current?.emit('consumer-resume', {
             serverConsumerId: consumerParams.serverConsumerId,
@@ -281,6 +351,33 @@ export default function RoomPage() {
         )
       );
     });
+
+    socket.on('peer-joined', ({ socketId, name }) => {
+      setRemoteStreams(prev => {
+        const alreadyExists = prev.some(s => s.producerId === socketId);
+        if (alreadyExists) return prev;
+    
+        return [
+          ...prev,
+          {
+            stream: new MediaStream(), 
+            producerId: socketId,
+            isPaused: true,
+            name
+          }
+        ];
+      });
+    });
+
+    socket.on('peer-left', ({ socketId }) => {
+      setRemoteStreams(prev =>
+        prev.filter(s => s.producerId !== socketId)
+      );
+    
+      consumerTransportsRef.current = consumerTransportsRef.current.filter(
+        (t) => t.producerId !== socketId
+      );
+    });
     
     joinRoom();
 
@@ -317,7 +414,7 @@ export default function RoomPage() {
                   </div>
                 )}
                 <div className="absolute top-2 left-2 text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
-                  sdffds
+                  User
                 </div>
               </div>
             ))}
@@ -349,7 +446,19 @@ export default function RoomPage() {
           onClick={handleLocalStream}
           className="p-4 bg-blue-500 text-white rounded-3xl w-12 h-12 flex items-center"
         >
-          {isVideoOnRef.current ? <IoVideocamOff className='w-8 h-8'/>:<IoVideocam className='w-8 h-8'/>}
+          {isVideoOn ? <IoVideocamOff className='w-8 h-8'/>:<IoVideocam className='w-8 h-8'/>}
+        </button>
+        <button
+          onClick={handleLocalAudioStream}
+          className="ml-5 p-4 bg-blue-500 text-white rounded-3xl w-12 h-12 flex items-center"
+        >
+          {isMicOn ? <IoMdMicOff className='w-8 h-8'/>:<IoMdMic className='w-8 h-8'/>}
+        </button>
+        <button
+          onClick={leaveRoom}
+          className="ml-5 p-4 bg-blue-500 text-white rounded-3xl w-12 h-12 flex items-center"
+        >
+          <ImExit className='w-8 h-8'/>
         </button>
       </div>
     </div>
