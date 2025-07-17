@@ -19,23 +19,27 @@ export const AppBar = ()=>{
         <div className="px-10 font-extrabold">
             VIBECAST
         </div>
-        <div className="pl-10">
+        <div className="pl-10 cursor-pointer">
             Product
         </div>
-        <div className="pl-5">
+        <div className="pl-5 cursor-pointer">
             Solutions
         </div>
-        <div className="pl-5">
+        <div className="pl-5 cursor-pointer">
             Business
         </div>
-        <div className="pl-5">
+        <div className="pl-5 cursor-pointer">
             Pricing
         </div>
-        <div className="pl-150">
+        <div className="pl-150 cursor-pointer">
             Contact Sales
         </div>
-        <div className="pl-10">
-            Login
+        <div className="pl-10 cursor-pointer">
+            <nav>
+                <Link href="/login">
+                    Login
+                </Link>
+            </nav>
         </div>
         <nav>
             <Link href="/signup">

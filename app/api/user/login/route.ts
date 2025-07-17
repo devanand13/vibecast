@@ -2,6 +2,7 @@
 
 import {  NextResponse } from 'next/server';
 import {  PrismaClient } from '@/generated/prisma';
+import bcrypt from 'bcryptjs';
 
 export async function POST(request : Request) {
     const prisma = new PrismaClient()
@@ -9,7 +10,7 @@ export async function POST(request : Request) {
     const body = await request.json()
 
     const email = body.email;
-    const password = body.password;
+    const password:string = body.password;
     
     try{
         const user = await prisma.user.findFirst({
@@ -17,17 +18,19 @@ export async function POST(request : Request) {
                 username:email
             }
         })
-
-        if(user?.password == password){
-            return NextResponse.json({ message: 'Logged In!', user: user });
+        if (!user) {
+            return NextResponse.json({ message: "Invalid Credentials!" }, { status: 401 });
+        } 
+        
+        const isvalidPassword = await bcrypt.compare(password,user.password);
+        
+        if(isvalidPassword){
+            return NextResponse.json({ message: 'Logged In!', user: user },{status:200});
         }else{
-            return NextResponse.json({ message: 'Invalid Credentials!'});
+            return NextResponse.json({ message: 'Invalid Credentials!'},{status:401} );
         }
     }catch(e){
         console.log(e)
-        return NextResponse.json({ message: 'Signup Failed, please check the fields!', status:400 });    
+        return NextResponse.json({ message: 'Signup Failed, please check the fields!'}, {status:500 });    
     }
-    
-
-    
 }

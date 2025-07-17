@@ -1,4 +1,5 @@
 import { ServicesButton } from "./ServicesButton";
+import Link from "next/link";
 
 export const Landing = () => {
     
@@ -40,7 +41,11 @@ export const Landing = () => {
             })}
           </div>
           <div className="mt-15 bg-violet-500 hover:bg-violet-400 cursor-pointer w-60 rounded-lg text-center font-bold">
-            <button className="p-2 py-3 cursor-pointer ">Start For Free</button>
+            <nav>
+              <Link href="/signup">
+                <button className="p-2 py-3 cursor-pointer ">Start For Free</button>
+              </Link>
+            </nav>
           </div>
         </div>
   

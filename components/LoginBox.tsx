@@ -14,6 +14,8 @@ export const LoginBox = () => {
     const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [errMessage,setErrMessage] = useState("");
+
 
     const loginOptions = [
       {
@@ -28,6 +30,14 @@ export const LoginBox = () => {
 
     const handleLogin = async () => {
       try {
+        if(!email){
+          setErrMessage("Please enter a valid email!");
+          return;
+        }
+        if(!password){
+          setErrMessage("Please enter your password!");
+          return;
+        }
         const res = await fetch("/api/user/login", {
           method: "POST",
           headers: {
@@ -39,13 +49,13 @@ export const LoginBox = () => {
         const data = await res.json();
   
         if (!res.ok) {
-          throw new Error(data.message || "Login failed");
+          setErrMessage(data.message || "Login failed");
+          return;
         }
-  
-        alert("Login successful!");
+
         router.push("/dashboard/home"); 
       } catch (err) {
-        alert("Error: " + err);
+          setErrMessage("Something went wrong. Please try again.");
       }
     };
     
@@ -53,8 +63,14 @@ export const LoginBox = () => {
       <div className="fixed inset-0 flex items-center justify-center z-50 overflow-hidden shadow-xl">
         <div className="bg-black rounded-2xl shadow-xl w-220 h-120 flex overflow-hidden">
             <div className="bg-zinc-900 w-45/100 flex flex-col">
-            <div>
-                <div className="pt-20">
+            <div onKeyDown={(e) => {
+              console.log(e.key)
+              if (e.key === 'Enter') {
+                    handleLogin();
+                  }
+                }
+              }>
+                <div className="pt-15" >
                     <div className="text-white font-bold text-3xl w-full flex justify-center">
                         Login to VibeCast
                     </div>
@@ -81,9 +97,31 @@ export const LoginBox = () => {
                         or
                     </div>
                     <div className="flex flex-col pt-3 p-2 items-center">
-                      <input className="bg-neutral-800 text-white pl-4 p-3 w-4/5 rounded-xl  focus:outline focus:outline-2 focus:outline-violet-500 " type="text" placeholder="Email" onChange={(e)=>{setEmail(e.target.value)}}/>
-                      <input className="bg-neutral-800 text-white pl-4 p-3 mt-3 w-4/5 rounded-xl focus:outline focus:outline-2 focus:outline-violet-500" type="text" placeholder="Password" onChange={(e)=>{setPassword(e.target.value)}} />
-                      <button className="bg-violet-500 w-4/5 py-2 mt-3 rounded-xl text-white font-bold text-md hover:bg-violet-800 hover:cursor-pointer" onClick={handleLogin}>Log in</button>
+                        <input
+                          className={`bg-neutral-800 text-white pl-4 p-3 w-4/5 rounded-xl focus:outline focus:outline-2 ${
+                            errMessage ? 'border border-red-500 focus:outline-red-500' : 'focus:outline-violet-500'
+                          }`}
+                          type="text"
+                          placeholder="Email"
+                          onChange={(e) => {
+                            setEmail(e.target.value)
+                            setErrMessage("")
+                          }}
+                        />
+
+                        <input
+                          className={`bg-neutral-800 text-white pl-4 p-3 mt-3 w-4/5 rounded-xl focus:outline focus:outline-2 ${
+                            errMessage ? 'border border-red-500 focus:outline-red-500' : 'focus:outline-violet-500'
+                          }`}
+                          type="password"
+                          placeholder="Password"
+                          onChange={(e) => {
+                            setPassword(e.target.value)
+                            setErrMessage("")
+                          }}
+                        />
+                        {errMessage && (<div className="text-red-500 text-sm ml-5 w-4/5">{errMessage}</div>)}
+                          <button className="bg-violet-500 w-4/5 py-2 mt-3 rounded-xl text-white font-bold text-md hover:bg-violet-800 hover:cursor-pointer" onClick={handleLogin}>Log in</button>
                     </div>
                     <nav>
                         <Link href="/resetpassword">
