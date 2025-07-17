@@ -24,11 +24,14 @@ type ServerConsumerParams = {
   kind: 'audio' | 'video';
   rtpParameters: RtpParameters;
   serverConsumerId: string;
+  peerName:string;
 };
 
 type RemoteStream = {
   stream: MediaStream;
   producerId: string;
+  isPaused?:Boolean;
+  name?:String;
 };
 
 
@@ -42,8 +45,6 @@ export default function RoomPage() {
   const producerRef = useRef<Producer | null>(null);
   const isVideoOnRef = useRef(false);
   const [remoteStreams, setRemoteStreams] = useState<RemoteStream[]>([]);
-
-
 
   const consumerTransportsRef = useRef<{
     transport: Transport<AppData>;
@@ -62,20 +63,29 @@ export default function RoomPage() {
     codecOptions: { videoGoogleStartBitrate: 1000 },
   };
 
-  const getLocalStream = async () => {
+  const handleLocalStream = async () => {
     if (isVideoOnRef.current) {
-      // Stop the video
-      videoTrackRef.current?.stop();
+      // Pause producer
+      await producerRef.current?.pause();
+  
+      // Stop video track to release camera
+      if (videoTrackRef.current) {
+        videoTrackRef.current.stop();
+        videoTrackRef.current = null;
+      }
+  
+      // Clear local video preview
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = null;
       }
+  
+      socketRef.current?.emit('producer-pause');
       isVideoOnRef.current = false;
-      socketRef.current?.emit('videoOff')
       return;
     }
   
     try {
-      
+      // Get new camera stream
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
         video: {
@@ -83,25 +93,37 @@ export default function RoomPage() {
           height: { min: 400, max: 1080 },
         },
       });
-
-      videoTrackRef.current = stream.getVideoTracks()[0];
-
+  
+      const newTrack = stream.getVideoTracks()[0];
+      videoTrackRef.current = newTrack;
+  
+      // Set local preview
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
       }
-
-      createSendTransport();
-
+  
+      if (!producerRef.current) {
+        // Call only once: will internally call produce()
+        await createSendTransport();
+      } else {
+        // Reuse transport/producer
+        await producerRef.current.replaceTrack({ track: newTrack });
+        await producerRef.current.resume();
+      }
+  
+      socketRef.current?.emit('producer-resume');
       isVideoOnRef.current = true;
     } catch (err) {
-      console.error('Error getting local stream:', err);
+      console.error('Error accessing camera:', err);
     }
   };
+  
+  
 
   const joinRoom = () => {
     socketRef.current?.emit(
       'joinRoom',
-      { roomName: room },
+      { roomName: room, userName:"Random user" },
       async ({ rtpCapabilities }: { rtpCapabilities: RtpCapabilities }) => {
         const device = new mediasoupClient.Device();
         await device.load({ routerRtpCapabilities: rtpCapabilities });
@@ -113,6 +135,8 @@ export default function RoomPage() {
   };
 
   const createSendTransport = () => {
+    if (producerTransportRef.current || producerRef.current) return;
+
     socketRef.current?.emit('createWebRtcTransport', { consumer: false }, ({ params }: { params: TransportOptions }) => {
       console.log('Params')
       console.log(params)
@@ -204,7 +228,7 @@ export default function RoomPage() {
             video.play().catch((e) => console.warn('[❌] Auto-play blocked:', e));
           };
 
-          setRemoteStreams((prev) => [...prev, { stream, producerId: remoteProducerId }]);
+          setRemoteStreams((prev) => [...prev, { stream, producerId: remoteProducerId, name:consumerParams.peerName }]);
 
           socketRef.current?.emit('consumer-resume', {
             serverConsumerId: consumerParams.serverConsumerId,
@@ -237,8 +261,27 @@ export default function RoomPage() {
 
       setRemoteStreams(prev => prev.filter(s => s.producerId !== remoteProducerId));
     });
-    
 
+    socket.on('producer-paused', ({ producerId }) => {
+      setRemoteStreams(prev =>
+        prev.map(streamObj =>
+          streamObj.producerId === producerId
+            ? { ...streamObj, isPaused: true }
+            : streamObj
+        )
+      );
+    });
+    
+    socket.on('producer-resumed', ({ producerId }) => {
+      setRemoteStreams(prev =>
+        prev.map(streamObj =>
+          streamObj.producerId === producerId
+            ? { ...streamObj, isPaused: false }
+            : streamObj
+        )
+      );
+    });
+    
     joinRoom();
 
     return () => {
@@ -255,22 +298,30 @@ export default function RoomPage() {
               remoteStreams.length === 1 ? 'grid-cols-1 w-full' : 'grid-cols-2 w-13/16'
             }`}
           >
-            {remoteStreams.map(({ stream }, index) => (
+            {remoteStreams.map(({ stream, isPaused, name }, index) => (
               <div key={index} className="relative w-full aspect-video">
-              <video
-                autoPlay
-                playsInline
-                muted
-                className="w-full h-full bg-black rounded object-contain"
-                ref={(video) => {
-                  if (video) video.srcObject = stream;
-                }}
-              />
-              <div className="absolute top-2 left-2 text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
-                {`User ${index + 1}`}
+                <video
+                  autoPlay
+                  playsInline
+                  muted
+                  className={`w-full h-full bg-black rounded object-contain ${
+                    isPaused ? 'opacity-30 grayscale' : ''
+                  }`}
+                  ref={(video) => {
+                    if (video) video.srcObject = stream;
+                  }}
+                />
+                {isPaused && (
+                  <div className="absolute inset-0 flex items-center justify-center text-white text-xl bg-black bg-opacity-60 rounded">
+                    Camera Off
+                  </div>
+                )}
+                <div className="absolute top-2 left-2 text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
+                  sdffds
+                </div>
               </div>
-            </div>            
             ))}
+
           </div>
         )}
         <div
@@ -295,7 +346,7 @@ export default function RoomPage() {
 
       <div className="flex justify-center p-4">
         <button
-          onClick={getLocalStream}
+          onClick={handleLocalStream}
           className="p-4 bg-blue-500 text-white rounded-3xl w-12 h-12 flex items-center"
         >
           {isVideoOnRef.current ? <IoVideocamOff className='w-8 h-8'/>:<IoVideocam className='w-8 h-8'/>}
