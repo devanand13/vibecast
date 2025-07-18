@@ -31,6 +31,6 @@ export async function POST(request : Request) {
         }
     }catch(e){
         console.log(e)
-        return NextResponse.json({ message: 'Signup Failed, please check the fields!'}, {status:500 });    
+        return NextResponse.json({ message: 'Login Failed, please check the fields!'}, {status:500 });    
     }
 }

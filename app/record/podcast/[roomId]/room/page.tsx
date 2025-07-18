@@ -2,7 +2,7 @@
 
 import { useEffect, useRef,useState } from 'react';
 import io from 'socket.io-client';
-import mediasoupClient, { Device } from 'mediasoup-client';
+import { Device } from 'mediasoup-client';
 import { TransportOptions,RtpParameters } from 'mediasoup-client/types';
 import { IoVideocam,IoVideocamOff } from "react-icons/io5";
 import { IoMdMic,IoMdMicOff } from "react-icons/io";
@@ -130,7 +130,7 @@ export default function RoomPage() {
       'joinRoom',
       { roomName: room, userName: "Random user" },
       async ({ rtpCapabilities, peers }: { rtpCapabilities: RtpCapabilities; peers: { socketId: string; name: string }[] }) => {
-        const device = new mediasoupClient.Device();
+        const device = new Device();
         await device.load({ routerRtpCapabilities: rtpCapabilities });
         deviceRef.current = device;
     

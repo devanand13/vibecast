@@ -50,7 +50,6 @@ export const SignUpBox = () => {
         const data = await res.json();
   
         if (!res.ok) {
-          console.log(data)
           setErrMessage(data.message || "Signup failed");
           return
         }
@@ -144,7 +143,6 @@ export const SignUpBox = () => {
                       const handleClick = () => {
                         if (signupoption.text === "Continue with Email") {
                           setMailSelection(true);
-                          console.log(mailSelection)
                         }
                       };
 

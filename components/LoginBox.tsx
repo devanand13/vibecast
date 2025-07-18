@@ -64,7 +64,6 @@ export const LoginBox = () => {
         <div className="bg-black rounded-2xl shadow-xl w-220 h-120 flex overflow-hidden">
             <div className="bg-zinc-900 w-45/100 flex flex-col">
             <div onKeyDown={(e) => {
-              console.log(e.key)
               if (e.key === 'Enter') {
                     handleLogin();
                   }
