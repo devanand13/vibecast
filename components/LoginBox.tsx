@@ -4,7 +4,6 @@ import { FaApple } from "react-icons/fa";
 import { LoginOptionButton } from "./LoginOptionButton";
 import { useState } from "react";
 import { FaGoogle } from "react-icons/fa6";
-import Error from "next/error";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -56,6 +55,7 @@ export const LoginBox = () => {
         router.push("/dashboard/home"); 
       } catch (err) {
           setErrMessage("Something went wrong. Please try again.");
+          console.log(err)
       }
     };
     

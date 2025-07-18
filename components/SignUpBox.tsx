@@ -4,7 +4,6 @@ import { FaApple } from "react-icons/fa";
 import { MdOutlineMailOutline } from "react-icons/md";
 import { SignUpOptionButton } from "./SIgnUpOptionButton";
 import { useState } from "react";
-import Error from "next/error";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";

@@ -33,8 +33,8 @@ type ServerConsumerParams = {
 type RemoteStream = {
   stream: MediaStream;
   producerId: string;
-  isPaused?:Boolean;
-  name?:String;
+  isPaused?:boolean;
+  name?:string;
 };
 
 
@@ -384,7 +384,7 @@ export default function RoomPage() {
     return () => {
       socket.disconnect();
     };
-  }, []);
+  },[]);
 
   return (
     <div className="relative bg-neutral-800 h-screen flex flex-col justify-between p-4">
@@ -414,7 +414,7 @@ export default function RoomPage() {
                   </div>
                 )}
                 <div className="absolute top-2 left-2 text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
-                  User
+                  {name}
                 </div>
               </div>
             ))}
