@@ -3,6 +3,7 @@
 import {  NextResponse } from 'next/server';
 import {  PrismaClient } from '@/generated/prisma';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 export async function POST(request : Request) {
     const prisma = new PrismaClient()
@@ -32,7 +33,8 @@ export async function POST(request : Request) {
             }
         })
 
-        return NextResponse.json({ message: 'Signed Up!', user: user },{status:200});
+        const token = jwt.sign(user, process.env.JWT_SECRET!, { expiresIn: "7d" });
+        return NextResponse.json({ message: 'Signed Up!', token },{status:200});
     }catch(e){
         console.log(e)
         return NextResponse.json({ message: 'Signup Failed, please check the fields!'},{ status:400 });    

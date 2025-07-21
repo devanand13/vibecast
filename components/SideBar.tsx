@@ -11,21 +11,25 @@ import { AiOutlineUserAdd } from "react-icons/ai";
 const sideBarOptions = [
     {
         text:"Home",
-        icon:MdHomeFilled
+        icon:MdHomeFilled,
+        path:"/dashboard/home"
     },
     {
         text:"Projects",
-        icon: IoIosFolderOpen
+        icon: IoIosFolderOpen,
+        path:"/projects"
     },{
         text:"Schedule",
-        icon:AiOutlineSchedule
+        icon:AiOutlineSchedule,
+        path:"/dashboard/home"
     }
 ]
 
 const sideBarBottomOptions = [
     {
         text:"Settings",
-        icon: IoSettingsOutline
+        icon: IoSettingsOutline,
+        path:"/settings"
     }
 ]
 
@@ -41,7 +45,7 @@ export const SideBar = ({ isVisible }: { isVisible: boolean }) => {
                         sideBarOptions.map((sidebarOption, index) => {
                             console.log(sidebarOption)
                             return <div key={index}>
-                                <SideBarBtn icon={sidebarOption.icon} buttonText={sidebarOption.text} isOpen={true}/>             
+                                <SideBarBtn icon={sidebarOption.icon} buttonText={sidebarOption.text} path={sidebarOption.path} isOpen={true}/>             
                             </div>
                         })
                     }
@@ -49,7 +53,7 @@ export const SideBar = ({ isVisible }: { isVisible: boolean }) => {
                     
                     <div className="pt-100">
                     <div className="flex">
-                        <SideBarBtn icon={MdOndemandVideo} buttonText="Open Studio"isOpen={true}/>
+                        <SideBarBtn icon={MdOndemandVideo} buttonText="Open Studio" path="/dashboard/home" isOpen={true}/>
                         <div className="flex items-center justify-center cursor-pointer ">
                             <div className="w-10 h-10 rounded-full bg-stone-800 flex justify-center items-center hover:bg-stone-900">
                             <AiOutlineUserAdd size={20}/>
@@ -60,7 +64,7 @@ export const SideBar = ({ isVisible }: { isVisible: boolean }) => {
                         sideBarBottomOptions.map((sidebarOption, index) => {
                             console.log(sidebarOption)
                             return <div key={index}>
-                                <SideBarBtn icon={sidebarOption.icon} buttonText={sidebarOption.text} isOpen={true}/>             
+                                <SideBarBtn icon={sidebarOption.icon} buttonText={sidebarOption.text} path={sidebarOption.path} isOpen={true}/>             
                             </div>
                         })
                     }
@@ -71,7 +75,7 @@ export const SideBar = ({ isVisible }: { isVisible: boolean }) => {
                         sideBarOptions.map((sidebarOption, index) => {
                             console.log(sidebarOption)
                             return <div key={index} className="m-2 hover:bg-stone-800 rounded-xl p-2 cursor-pointer"> 
-                                <SideBarBtn icon={sidebarOption.icon} buttonText={sidebarOption.text} isOpen={false}/>             
+                                <SideBarBtn icon={sidebarOption.icon} buttonText={sidebarOption.text}  path={sidebarOption.path} isOpen={false}/>             
                             </div>
                         })
                     }
@@ -80,7 +84,7 @@ export const SideBar = ({ isVisible }: { isVisible: boolean }) => {
                     <div className="pt-70">
                     <div className="flex flex-col justify-center items-center">
                         <div className="cursor-pointer hover:bg-stone-800 w-3/5 p-2 rounded-xl">
-                            <SideBarBtn icon={MdOndemandVideo} buttonText=""isOpen={false}/>
+                            <SideBarBtn icon={MdOndemandVideo} buttonText="" path="/dashboard/home" isOpen={false}/>
                         </div>
                         <div className="flex items-center justify-center cursor-pointer">
                             <div className="w-10 h-10 rounded-full bg-stone-800 my-2 flex justify-center items-center hover:bg-stone-900">
@@ -93,7 +97,7 @@ export const SideBar = ({ isVisible }: { isVisible: boolean }) => {
                             console.log(sidebarOption)
                             return <div key={index} className="  flex justify-center items-center">
                                 <div className="p-2 hover:bg-stone-800 rounded-xl w-3/5 cursor-pointer">
-                                    <SideBarBtn icon={sidebarOption.icon} buttonText={""} isOpen={false}/>   
+                                    <SideBarBtn icon={sidebarOption.icon} buttonText={""} path={sidebarOption.path}isOpen={false}/>   
                                 </div>          
                             </div>
                         })

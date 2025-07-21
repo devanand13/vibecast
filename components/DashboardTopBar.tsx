@@ -6,7 +6,7 @@ export const DashboardTopBar = ({
     setSidebarVisible: (val: boolean) => void;
   }) => {
     return (
-      <div className="h-15 bg-black flex items-center">
+      <div className="h-15 bg-black flex items-center flex-shrink-0">
         <div className="w-60 flex items-center">
           {isSidebarVisible && (
             <div className="px-8 font-extrabold text-white">VIBECAST</div>

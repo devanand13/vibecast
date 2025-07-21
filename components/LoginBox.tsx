@@ -52,6 +52,7 @@ export const LoginBox = () => {
           return;
         }
 
+        localStorage.setItem("authToken", data.token);
         router.push("/dashboard/home"); 
       } catch (err) {
           setErrMessage("Something went wrong. Please try again.");

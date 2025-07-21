@@ -9,11 +9,15 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.848.0",
+    "@aws-sdk/s3-request-presigner": "^3.848.0",
     "@prisma/client": "^6.10.1",
     "@types/next": "^9.0.0",
     "@types/ws": "^8.18.1",
     "bcryptjs": "^3.0.2",
     "clsx": "^2.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "jwt-decode": "^4.0.0",
     "mediasoup-client": "^3.12.4",
     "next": "15.3.4",
     "react": "^19.0.0",
@@ -27,6 +31,7 @@
     "@eslint/eslintrc": "^3",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/postcss": "^4",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
