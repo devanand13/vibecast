@@ -29,7 +29,8 @@ export async function POST(request: Request) {
     if (!isvalidPassword) {
       return NextResponse.json({ message: "Invalid Credentials!" }, { status: 401 });
     }
-
+    
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...userRes } = user;
 
     const token = jwt.sign(userRes, process.env.JWT_SECRET!, { expiresIn: "7d" });
