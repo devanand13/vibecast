@@ -55,13 +55,10 @@ export default function Settings(){
             }),
           });          
 
-        const jsonRes = await updatedUser.json()
 
 
         if (updatedUser.ok) {
-            console.log("✅ User updated:");
             setImage(publicUrl);
-            localStorage.setItem("authToken", jsonRes?.token);
         } else {
             console.error("❌ Failed to update");
         }
@@ -74,6 +71,7 @@ export default function Settings(){
             }
           const updatedUser = await fetch("/api/user/updateDetails", {
             method: "PUT",
+            credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               username: user?.username, 
@@ -82,11 +80,7 @@ export default function Settings(){
           });
           
       
-          const jsonRes = await updatedUser.json();
-      
           if (updatedUser.ok) {
-            console.log("✅ Name updated!");
-            localStorage.setItem("authToken", jsonRes.token); 
           } else {
             console.error("❌ Failed to update name");
           }
@@ -96,22 +90,20 @@ export default function Settings(){
       };      
 
       useEffect(() => {
-        const token = localStorage.getItem("authToken");
-        if (!token) return;
-      
         const verifyToken = async () => {
           try {
             const res = await fetch("/api/verify", {
-              headers: { Authorization: `Bearer ${token}` },
+              credentials: "include"
             });
       
             if (res.ok) {
               const data = await res.json();
               const decoded = data.user as MyTokenPayload;
-              console.log(decoded)
               setUser(decoded);
               setImage(decoded.profileImage || "");
               setName(decoded.name || "");
+            } else {
+              console.log("User is not authenticated.");
             }
           } catch (error) {
             console.error("Error verifying token:", error);
@@ -119,7 +111,8 @@ export default function Settings(){
         };
       
         verifyToken();
-      }, []);      
+      }, []);
+        
       
       
       
@@ -160,9 +153,9 @@ export default function Settings(){
                                         Profile
                                     </div>
                                     <div className="ml-6 mt-3 w-30 h-30 ">
-                                    <div onClick={() => document.getElementById("profileImageInput")?.click()}className={`w-full h-full rounded-full overflow-hidden relative group cursor-pointer flex justify-center items-center ${image.trim() != "" ? "":"border"}`}>
+                                    <div onClick={() => document.getElementById("profileImageInput")?.click()}className={`w-full h-full rounded-full overflow-hidden relative group cursor-pointer flex justify-center items-center ${image?.trim() != "" ? "":"border"}`}>
                                     {
-                                        image.trim() != "" ? <Image
+                                        image?.trim() != "" ? <Image
                                         src={image}
                                         alt="Profile"
                                         fill

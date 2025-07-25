@@ -48,8 +48,7 @@ export const SignUpBox = () => {
         });
   
         const data = await res.json();
-        localStorage.setItem("authToken", data.token);
-        
+
         if (!res.ok) {
           setErrMessage(data.message || "Signup failed");
           return

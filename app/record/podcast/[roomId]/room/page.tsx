@@ -57,7 +57,6 @@ export default function RoomPage() {
     producerId: string;
   }[]>([]);
 
-  console.log(`Rerender`)
 
   const room = typeof window !== 'undefined' ? window.location.pathname.split('/')[3] : '';
 
@@ -189,8 +188,6 @@ export default function RoomPage() {
     if (producerTransportRef.current || producerRef.current) return;
 
     socketRef.current?.emit('createWebRtcTransport', { consumer: false }, ({ params }: { params: TransportOptions }) => {
-      console.log('Params')
-      console.log(params)
       const transport = deviceRef.current?.createSendTransport(params);
       if (!transport) return;
       producerTransportRef.current = transport;
@@ -278,8 +275,6 @@ export default function RoomPage() {
           video.onloadedmetadata = () => {
             video.play().catch((e) => console.warn('[❌] Auto-play blocked:', e));
           };
-
-          console.log(remoteStreams)
 
           setRemoteStreams((prev) => {
             const exists = prev.some(s => s.producerId === consumerParams.peerSocketId);

@@ -35,7 +35,14 @@ export async function POST(request: Request) {
 
     const token = jwt.sign(userRes, process.env.JWT_SECRET!, { expiresIn: "7d" });
 
-    return NextResponse.json({ message: "Logged In!", token }, { status: 200 });
+    const response =  NextResponse.json({ message: "Logged In!", token }, { status: 200 });
+    
+    response.headers.set(
+      "Set-Cookie",
+      `token=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=86400`
+    );
+
+    return response;
 
   } catch (e) {
     console.log(e);

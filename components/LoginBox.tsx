@@ -29,36 +29,38 @@ export const LoginBox = () => {
 
     const handleLogin = async () => {
       try {
-        if(!email){
+        if (!email) {
           setErrMessage("Please enter a valid email!");
           return;
         }
-        if(!password){
+        if (!password) {
           setErrMessage("Please enter your password!");
           return;
         }
+    
         const res = await fetch("/api/user/login", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ email, password })
+          body: JSON.stringify({ email, password }),
+          credentials: "include",
         });
-  
+    
         const data = await res.json();
-  
+    
         if (!res.ok) {
           setErrMessage(data.message || "Login failed");
           return;
         }
-
-        localStorage.setItem("authToken", data.token);
-        router.push("/dashboard/home"); 
+    
+        router.push("/dashboard/home");
       } catch (err) {
-          setErrMessage("Something went wrong. Please try again.");
-          console.log(err)
+        setErrMessage("Something went wrong. Please try again.");
+        console.error(err);
       }
     };
+    
     
     return (
       <div className="fixed inset-0 flex items-center justify-center z-50 overflow-hidden shadow-xl">
