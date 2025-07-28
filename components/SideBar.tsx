@@ -26,7 +26,7 @@ const sideBarOptions = [
     },{
         text:"Schedule",
         icon:AiOutlineSchedule,
-        path:"/dashboard/home"
+        path:"/schedule"
     }
 ]
 
@@ -102,7 +102,7 @@ export const SideBar = ({ isVisible }: { isVisible: boolean }) => {
                     
                     <div className="pt-100">
                     <div className="flex">
-                        <SideBarBtn icon={MdOndemandVideo} buttonText="Open Studio" path="/dashboard/home" isOpen={true}/>
+                        <SideBarBtn icon={MdOndemandVideo} buttonText="Open Studio" path="/studio" isOpen={true}/>
                         <div className="flex items-center justify-center cursor-pointer ">
                             <div className="w-10 h-10 rounded-full bg-stone-800 flex justify-center items-center hover:bg-stone-900">
                             <AiOutlineUserAdd size={20}/>
